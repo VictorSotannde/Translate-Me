@@ -1,12 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Page Title</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <h1>My Webpage</h1>
+    <p>Click the button below to show the text content.</p>
+    <button id="show-text-btn">Show Text</button>
 
-<h1>This is a Heading</h1>
-<p>This is a paragraph.</p>
+    <div id="text-modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="search-bar">
+                <input type="text" id="search-field" placeholder="Search...">
+                <button id="search-btn">Search</button>
+                <button id="add-word-btn">+</button>
+                <button id="delete-word-btn">-</button>
+            </div>
+            <div id="text-container">
+            </div>
+            <button id="edit-btn">Edit</button>
+            <div id="edit-panel" style="display: none;">
+                <div id="edit-container">
+                    <input type="text" id="edit-word" placeholder="Word...">
+                    <textarea id="edit-definition" placeholder="Definition..." rows="5"></textarea>
+                </div>
+                <button id="save-btn">Save</button>
+                <button id="cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
 
+    <script src="script.js"></script>
 </body>
 </html>
