@@ -140,9 +140,30 @@ body {
 }
 
 #text-container table tr {
-    line-height: 1;
+    line-height: 2;
 }
 
 #text-container table td {
-    padding: 1px;
+    padding: 10px;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+#edit-btn {
+    margin-left: auto;
+    order: 1;
+}
+
+#translate-back-btn {
+    align-self: center;
+    order: 2;
+}
+
+#change-lang-btn {
+    margin-right: auto;
+    order: 3;
 }
