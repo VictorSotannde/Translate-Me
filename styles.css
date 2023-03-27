@@ -2,6 +2,24 @@ body {
     font-family: Arial, sans-serif;
 }
 
+#save-btn {
+    background-color: green;
+    color: white;
+    font-weight: bold;
+}
+
+#cancel-btn {
+    background-color: red;
+    color: white;
+    font-weight: bold;
+}
+
+#search-btn, #add-word-btn, #delete-word-btn {
+    background-color: blue;
+    color: white;
+    font-weight: bold;
+}
+
 #text-modal {
     display: none;
     position: fixed;
@@ -23,7 +41,7 @@ body {
     position: relative;
     display: flex;
     flex-direction: column;
-    overflow-y: auto; /* Add this line */
+    overflow-y: auto;
 }
 
 .close {
@@ -118,13 +136,13 @@ body {
     flex-grow: 1;
     overflow-y: scroll;
     border: 1px solid #ccc;
-    padding: 10px;
+    padding: 1px;
 }
 
 #text-container table tr {
-    line-height: 4;
+    line-height: 1;
 }
 
 #text-container table td {
-    padding: 10px;
+    padding: 1px;
 }

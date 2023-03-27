@@ -13,9 +13,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const editDefinition = document.getElementById("edit-definition");
     const addWordButton = document.getElementById("add-word-btn");
     const deleteWordButton = document.getElementById("delete-word-btn");
+    const changeLangBtn = document.getElementById("change-lang-btn");
+    const languageModal = document.getElementById("language-modal");
+    const closeLangBtn = document.querySelector(".close-lang");
+    const translateBtn = document.getElementById("translate-btn");
+    const cancelTranslateBtn = document.getElementById("cancel-translate-btn");
+    const languageSelect = document.getElementById("language-select");
 
     let originalLines = [];
     let currentAction = "edit";
+    let highlightedWord = "";
+    let originalHtml;
 
     // Event listeners
     showTextButton.addEventListener("click", handleShowTextClick);
@@ -26,6 +34,33 @@ document.addEventListener("DOMContentLoaded", function () {
     cancelButton.addEventListener("click", handleCancelClick);
     addWordButton.addEventListener("click", handleAddWordClick);
     deleteWordButton.addEventListener("click", handleDeleteWordClick);
+
+    changeLangBtn.addEventListener("click", () => {
+        languageModal.style.display = "block";
+    });
+
+    document.querySelector(".close-lang").addEventListener("click", () => {
+        languageModal.style.display = "none";
+    });
+
+    document.getElementById("translate-btn").addEventListener("click", () => {
+        const targetLanguage = languageSelect.value;
+        performTranslation(targetLanguage);
+        languageModal.style.display = "none";
+    });
+
+    document.getElementById("cancel-translate-btn").addEventListener("click", () => {
+        languageModal.style.display = "none";
+    });
+
+    // Add the event listener for the "Translate Back to English" button
+    const translateBackBtn = document.getElementById("translate-back-btn");
+    translateBackBtn.addEventListener("click", handleTranslateBackClick);
+
+
+    function handleTranslateBackClick() {
+        textContainer.innerHTML = originalHtml;
+    }
 
     function handleShowTextClick() {
         fetch("english.txt")
@@ -44,13 +79,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     })
                     .join("");
                 textContainer.innerHTML = `<table><tbody>${tableRows}</tbody></table>`;
+                originalHtml = textContainer.innerHTML;
                 textModal.style.display = "block";
             })
             .catch((error) => {
                 console.log("Error fetching text file:", error);
                 textContainer.textContent = "Error loading text file.";
             });
-    }    
+    }
 
     function handleCloseButtonClick() {
         textModal.style.display = "none";
@@ -80,6 +116,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const firstHighlightedElement = document.querySelector(`.${highlightedClass}`);
             firstHighlightedElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            highlightedWord = firstHighlightedElement.textContent;
         } else {
             alert("Word not found.");
         }
@@ -100,47 +137,45 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function handleSaveClick() {
         if (currentAction === "edit") {
-            // Existing save functionality (edit)
             const editedWord = editWord.value;
             const editedDefinition = editDefinition.value;
-    
+
             if (editedWord && editedDefinition) {
                 const wordsOnly = originalLines.map((line) => line.split(" - ")[0]);
                 const foundIndex = wordsOnly.indexOf(highlightedWord);
-    
+
                 if (foundIndex !== -1) {
                     originalLines[foundIndex] = `${editedWord} - ${editedDefinition}`;
-    
+
                     const tableRows = originalLines
                         .map((line) => {
                             const [word, definition] = line.split(" - ");
                             return `<tr class="editable"><td>${word}</td><td>${definition}</td></tr>`;
                         })
                         .join("");
-    
+
                     textContainer.innerHTML = `<table><tbody>${tableRows}</tbody></table>`;
                 }
             }
         } else if (currentAction === "add") {
-            // New save functionality (add)
             const newWord = editWord.value;
             const newDefinition = editDefinition.value;
-    
+
             if (newWord && newDefinition) {
                 originalLines.push(`${newWord} - ${newDefinition}`);
                 originalLines.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-    
+
                 const tableRows = originalLines
                     .map((line) => {
                         const [word, definition] = line.split(" - ");
                         return `<tr class="editable"><td>${word}</td><td>${definition}</td></tr>`;
                     })
                     .join("");
-    
+
                 textContainer.innerHTML = `<table><tbody>${tableRows}</tbody></table>`;
             }
         }
-    
+
         editPanel.style.display = "none";
     }
 
@@ -161,22 +196,75 @@ document.addEventListener("DOMContentLoaded", function () {
             const highlightedWord = highlightedElements[0].textContent;
             const wordsOnly = originalLines.map((line) => line.split(" - ")[0]);
             const foundIndex = wordsOnly.indexOf(highlightedWord);
-    
+
             if (foundIndex !== -1) {
                 originalLines.splice(foundIndex, 1);
-    
+
                 const tableRows = originalLines
                     .map((line) => {
                         const [word, definition] = line.split(" - ");
                         return `<tr class="editable"><td>${word}</td><td>${definition}</td></tr>`;
                     })
                     .join("");
-    
+
                 textContainer.innerHTML = `<table><tbody>${tableRows}</tbody></table>`;
             }
         } else {
             alert("No word is highlighted. Highlight a word to delete it.");
         }
     }
-});
 
+    async function translateText(text, targetLanguage) {
+        const apiKey = "AIzaSyBioEiNvHvyhP2Ay98x_xAAs5pQGYs23P4";
+
+        try {
+            const response = await fetch(
+                `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`,
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        q: text,
+                        source: "en",
+                        target: targetLanguage,
+                        format: "text",
+                    }),
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Translation Error");
+            }
+
+            const data = await response.json();
+            return data.data.translations[0].translatedText;
+        } catch (error) {
+            alert("Error translating text.");
+            return text;
+        }
+    }
+
+    async function performTranslation(targetLanguage) {
+        const table = textContainer.querySelector("table");
+    
+        const translationPromises = [];
+    
+        for (const row of table.rows) {
+            const wordCell = row.cells[0];
+            const definitionCell = row.cells[1];
+    
+            const wordPromise = translateText(wordCell.textContent, targetLanguage);
+            const definitionPromise = translateText(definitionCell.textContent, targetLanguage);
+    
+            translationPromises.push(
+                Promise.all([wordPromise, definitionPromise]).then(([translatedWord, translatedDefinition]) => {
+                    wordCell.innerHTML = translatedWord;
+                    definitionCell.innerHTML = translatedDefinition;
+                })
+            );
+        }
+    
+        await Promise.all(translationPromises);
+    }    
+
+});
