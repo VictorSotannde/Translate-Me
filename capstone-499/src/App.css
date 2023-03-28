@@ -1,0 +1,169 @@
+body {
+  font-family: Arial, sans-serif;
+}
+
+#save-btn {
+  background-color: green;
+  color: white;
+  font-weight: bold;
+}
+
+#cancel-btn {
+  background-color: red;
+  color: white;
+  font-weight: bold;
+}
+
+#search-btn, #add-word-btn, #delete-word-btn {
+  background-color: blue;
+  color: white;
+  font-weight: bold;
+}
+
+#text-modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 50%;
+  max-height: 50%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#search-bar {
+  margin-bottom: 10px;
+}
+
+#search-field {
+  width: 70%;
+  height: 35px;
+  font-size: 16px;
+}
+
+#search-btn {
+  width: 20%;
+  height: 35px;
+  font-size: 16px;
+}
+
+#text-container {
+  flex-grow: 1;
+  overflow-y: scroll;
+  border: 1px solid #ccc;
+  padding: 10px;
+  white-space: pre-wrap;
+}
+
+.highlighted {
+  background-color: yellow;
+}
+
+#text-modal {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 50%;
+}
+
+#search-bar {
+  display: flex;
+}
+
+#edit-panel {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+}
+
+#edit-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-grow: 1;
+  padding: 10px;
+  border-right: 1px solid black;
+}
+
+#edit-word {
+  width: 100%;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+#edit-definition {
+  width: 100%;
+  padding: 5px;
+  box-sizing: border-box;
+  resize: none;
+}
+
+#text-container {
+  flex-grow: 1;
+  overflow-y: scroll;
+  border: 1px solid #ccc;
+  padding: 1px;
+}
+
+#text-container table tr {
+  line-height: 2;
+}
+
+#text-container table td {
+  padding: 10px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+#edit-btn {
+  margin-left: auto;
+  order: 1;
+}
+
+#translate-back-btn {
+  align-self: center;
+  order: 2;
+}
+
+#change-lang-btn {
+  margin-right: auto;
+  order: 3;
+}
