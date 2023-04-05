@@ -20,9 +20,36 @@ class Dictionary extends Component {
     };
   }
 
-  componentDidMount() {
+
+  
+/*
+ componentDidMount() {
     this.loadTextFile();
   }
+  */
+
+
+  
+  componentDidMount() {
+    fetch('http://localhost:4000/api/data') // Update the URL to match your server's endpoint
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Error fetching data'); // Throw an error if response is not OK
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Update state with fetched data
+        this.setState({ textContent: data.text });
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+        // Handle the error, e.g. display an error message
+      });
+  }
+  
+  
+  
 
   showTextModal = () => {
     this.setState({ textModalVisible: true });
@@ -48,6 +75,7 @@ class Dictionary extends Component {
     this.setState({ languageModalVisible: false });
   };
 
+  /*
   loadTextFile = async () => {
     try {
       const response = await fetch('/English.txt');
@@ -57,6 +85,7 @@ class Dictionary extends Component {
       console.error('Error loading text file:', error);
     }
   };
+  */
 
 
   handleSearchChange = (e) => {
@@ -142,6 +171,9 @@ class Dictionary extends Component {
   handleLanguageChange(e) {
     this.setState({ selectedLanguage: e.target.value });
   }
+
+
+
 
   render() {
     const {
