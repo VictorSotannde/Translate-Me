@@ -11,7 +11,7 @@ app.use(cors());
 // Define the API endpoint
 app.get('/api/data', (req, res) => {
   // Read the text file and send its contents as response
-  fs.readFile('/Users/ekow_t/Desktop/Capstone-499/backend/data.txt', 'utf8', (err, data) => {
+  fs.readFile('/Users/aj/Documents/GitHub/Capstone-499/backend/data.txt', 'utf8', (err, data) => {
     if (err) {
       console.error('Error reading file:', err);
       res.status(500).json({ error: 'Error reading file' });

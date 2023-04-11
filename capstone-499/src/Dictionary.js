@@ -20,36 +20,21 @@ class Dictionary extends Component {
     };
   }
 
-
-  
-/*
- componentDidMount() {
-    this.loadTextFile();
-  }
-  */
-
-
-  
   componentDidMount() {
-    fetch('http://localhost:4000/api/data') // Update the URL to match your server's endpoint
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Error fetching data'); // Throw an error if response is not OK
-        }
-        return response.json();
-      })
-      .then(data => {
-        // Update state with fetched data
-        this.setState({ textContent: data.text });
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-        // Handle the error, e.g. display an error message
+    fetch('http://localhost:4000/api/data')
+      .then((response) => response.json())
+      .then((data) => {
+        const rawWordList = data.text.split('\n');
+        const formattedWordList = rawWordList.map((entry) => {
+          const [text, definition] = entry.split(' - ');
+          return { text, definition };
+        });
+        const sortedWordList = formattedWordList.sort((a, b) => a.text.localeCompare(b.text));
+        this.setState({ wordList: sortedWordList }, () => {
+          console.log(this.state.wordList);
+        });
       });
   }
-  
-  
-  
 
   showTextModal = () => {
     this.setState({ textModalVisible: true });
@@ -74,26 +59,6 @@ class Dictionary extends Component {
   hideLanguageModal = () => {
     this.setState({ languageModalVisible: false });
   };
-
-  /*
-  loadTextFile = async () => {
-    try {
-      const response = await fetch('/English.txt');
-      const text = await response.text();
-      const wordList = text.split('\n').map(line => {
-        const [text, definition] = line.split('-');
-        return { text, definition };
-      });
-      this.setState({ wordList, textContent: text }, () => {
-        this.handleSearch();
-      });
-    } catch (error) {
-      console.error('Error loading text file:', error);
-    }
-  };
-  */
-
-
 
   handleSearchChange = (e) => {
     this.setState({ searchValue: e.target.value }, () => {
@@ -180,8 +145,6 @@ class Dictionary extends Component {
   }
 
 
-
-
   render() {
     const {
       textModalVisible,
@@ -195,10 +158,10 @@ class Dictionary extends Component {
 
     return (
       <div>
-      
+
         <h1>My Webpage</h1>
         <p>Click the button below to show the text content.</p>
-        
+
         <button id="show-text-btn" onClick={this.showTextModal}>
           Show Text
         </button>
@@ -216,21 +179,10 @@ class Dictionary extends Component {
                   placeholder="Search..."
                   onChange={this.handleSearchChange}
                 />
-                {/* <button id="search-btn">Search</button> */}
                 <button id="add-word-btn" onClick={this.handleAddWord}>+</button>
-                {/* <button id="delete-word-btn">-</button> */}
               </div>
-              {/* <div id="text-container">
-                <pre>{this.state.textContent.split('\n').map((line, index) => (
-                  <React.Fragment key={index}>
-                    {line}
-                    <br />
-                  </React.Fragment>
-                ))}</pre>
-
-              </div> */}
               <div id="text-container">
-                {filteredList.map((word, index) => (
+                {(this.state.searchValue ? this.state.filteredList : this.state.wordList).map((word, index) => (
                   <div key={index} className="word-entry">
                     <h3>Word: {word.text}</h3>
                     <p>Definition: {word.definition}</p>
@@ -243,10 +195,9 @@ class Dictionary extends Component {
                   </div>
                 ))}
               </div>
-
-              <button id="edit-btn" onClick={this.showEditPanel}>
+              {/* <button id="edit-btn" onClick={this.showEditPanel}>
                 Edit
-              </button>
+              </button> */}
               <button id="change-lang-btn" onClick={this.showLanguageModal}>
                 Change Language
               </button>
@@ -293,7 +244,7 @@ class Dictionary extends Component {
                     </select>
                     <button id="translate-btn" onClick={this.handleTranslate}>Translate</button>
                     <button id="cancel-translate-btn" onClick={this.hideLanguageModal}>Cancel</button>
-                    <button id="translate-back-btn">Translate Back to English</button>
+                    <button id="translate-back-btn" onClick={this.handleTranslateBackToEnglish}>Translate Back to English</button>
                   </div>
                 </div>
               )}
