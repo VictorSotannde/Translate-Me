@@ -52,11 +52,18 @@ class Dictionary extends Component {
     try {
       const response = await fetch('/English.txt');
       const text = await response.text();
-      this.setState({ textContent: text });
+      const wordList = text.split('\n').map(line => {
+        const [text, definition] = line.split('-');
+        return { text, definition };
+      });
+      this.setState({ wordList, textContent: text }, () => {
+        this.handleSearch();
+      });
     } catch (error) {
       console.error('Error loading text file:', error);
     }
   };
+
 
 
   handleSearchChange = (e) => {
@@ -175,11 +182,11 @@ class Dictionary extends Component {
                   placeholder="Search..."
                   onChange={this.handleSearchChange}
                 />
-                <button id="search-btn">Search</button>
+                {/* <button id="search-btn">Search</button> */}
                 <button id="add-word-btn" onClick={this.handleAddWord}>+</button>
-                <button id="delete-word-btn">-</button>
+                {/* <button id="delete-word-btn">-</button> */}
               </div>
-              <div id="text-container">
+              {/* <div id="text-container">
                 <pre>{this.state.textContent.split('\n').map((line, index) => (
                   <React.Fragment key={index}>
                     {line}
@@ -187,12 +194,12 @@ class Dictionary extends Component {
                   </React.Fragment>
                 ))}</pre>
 
-              </div>
+              </div> */}
               <div id="text-container">
                 {filteredList.map((word, index) => (
                   <div key={index} className="word-entry">
-                    <h3>{word.text}</h3>
-                    <p>{word.definition}</p>
+                    <h3>Word: {word.text}</h3>
+                    <p>Definition: {word.definition}</p>
                     <button onClick={() => this.handleDeleteWord(index)}>
                       Delete
                     </button>
@@ -202,6 +209,7 @@ class Dictionary extends Component {
                   </div>
                 ))}
               </div>
+
               <button id="edit-btn" onClick={this.showEditPanel}>
                 Edit
               </button>
