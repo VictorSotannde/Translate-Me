@@ -188,8 +188,10 @@ class Dictionary extends Component {
 
     return (
       <div>
+      
         <h1>My Webpage</h1>
         <p>Click the button below to show the text content.</p>
+        
         <button id="show-text-btn" onClick={this.showTextModal}>
           Show Text
         </button>

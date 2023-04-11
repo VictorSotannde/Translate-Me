@@ -7,6 +7,7 @@ const fs = require('fs');
 const app = express();
 app.use(cors());
 
+
 // Define the API endpoint
 app.get('/api/data', (req, res) => {
   // Read the text file and send its contents as response
@@ -19,6 +20,7 @@ app.get('/api/data', (req, res) => {
     }
   });
 });
+
 
 // Start the server
 const PORT = 4000; // Update the port number as desired
