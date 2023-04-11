@@ -5,3 +5,9 @@
  2. Word lookup (words or keywords from definitions)
  3. Submit word/file of words (Word - Location - Definition - example sentence)
  4. Admin: View user submissions, Add submitted words to database
+ 
+
+# How to Run the System
+
+
+
