@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import axios from 'axios';
+import Modal from './Modal';
 
 class Dictionary extends Component {
   constructor(props) {
@@ -9,6 +10,9 @@ class Dictionary extends Component {
       textModalVisible: false,
       editPanelVisible: false,
       languageModalVisible: false,
+      addWordModalVisible: false,
+      newWordValue: '',
+      newDefinitionValue: '',
       textContent: '',
       searchValue: '',
       editValue: '',
@@ -18,6 +22,8 @@ class Dictionary extends Component {
       selectedLanguage: 'es',
       translatedText: '',
     };
+    this.handleEditChange = this.handleEditChange.bind(this);
+    this.handleLanguageChange = this.handleLanguageChange.bind(this);
   }
 
   componentDidMount() {
@@ -44,12 +50,18 @@ class Dictionary extends Component {
     this.setState({ textModalVisible: false });
   };
 
-  showEditPanel = () => {
-    this.setState({ editPanelVisible: true });
+  showEditPanel = (word) => {
+    const editIndex = this.state.wordList.findIndex((item) => item.text === word.text);
+    this.setState({
+      editPanelVisible: true,
+      editIndex: editIndex,
+      editValue: word.text,
+      editDefinition: word.definition,
+    });
   };
 
   hideEditPanel = () => {
-    this.setState({ editPanelVisible: false });
+    this.setState({ editPanelVisible: false, editValue: '', editDefinition: '' });
   };
 
   showLanguageModal = () => {
@@ -66,6 +78,12 @@ class Dictionary extends Component {
     });
   }
 
+  handleAddWordModal = () => {
+    this.setState((prevState) => ({
+      addWordModalVisible: !prevState.addWordModalVisible,
+    }));
+  };
+
   handleSearch() {
     const { searchValue, wordList } = this.state;
     const filteredList = wordList.filter((word) =>
@@ -74,47 +92,68 @@ class Dictionary extends Component {
     this.setState({ filteredList });
   }
 
-  handleAddWord() {
-    const { wordList, searchValue } = this.state;
-    const newWord = {
-      text: searchValue,
-      definition: 'New word definition',
+  handleAddWord = () => {
+    const newEntry = {
+      text: this.state.newWordValue,
+      definition: this.state.newDefinitionValue,
     };
-    this.setState(
-      {
-        wordList: [...wordList, newWord],
-        searchValue: '',
-      },
-      () => {
-        this.handleSearch();
+
+    this.setState((prevState) => {
+      const newList = [...prevState.wordList];
+      const insertIndex = newList.findIndex((word) => word.text.localeCompare(newEntry.text) > 0);
+      if (insertIndex === -1) {
+        newList.push(newEntry);
+      } else {
+        newList.splice(insertIndex, 0, newEntry);
       }
-    );
+
+      return {
+        wordList: newList,
+        addWordModalVisible: false,
+        newWordValue: '',
+        newDefinitionValue: '',
+      };
+    });
+  };
+
+
+  handleDeleteWord = (index) => {
+    // Check if the searchValue is present
+    if (this.state.searchValue) {
+      // If so, remove the word from the filtered list and find the corresponding index in the original word list
+      const wordToDelete = this.state.filteredList[index];
+      const originalIndex = this.state.wordList.findIndex((word) => word.text === wordToDelete.text);
+      this.setState((prevState) => {
+        const newList = [...prevState.wordList];
+        newList.splice(originalIndex, 1);
+        return { wordList: newList };
+      });
+    } else {
+      // If not, remove the word from the original word list
+      this.setState((prevState) => {
+        const newList = [...prevState.wordList];
+        newList.splice(index, 1);
+        return { wordList: newList };
+      });
+    }
+  };
+
+  handleEditChange(event, type) {
+    this.setState({ [type]: event.target.value });
   }
 
-  handleDeleteWord(index) {
-    const { wordList } = this.state;
-    const updatedWordList = wordList.filter((_, idx) => idx !== index);
-    this.setState({ wordList: updatedWordList }, () => {
-      this.handleSearch();
-    });
-  }
+  handleEditWord = () => {
+    const { editIndex, editValue, editDefinition } = this.state;
 
-  handleEditChange(e, type) {
-    this.setState({ [type]: e.target.value });
-  }
-
-  handleEditWord(index) {
-    const { wordList, editValue, editDefinition } = this.state;
-    const updatedWordList = wordList.map((word, idx) => {
-      if (idx === index) {
-        return { text: editValue, definition: editDefinition };
-      }
-      return word;
+    this.setState((prevState) => {
+      const newList = [...prevState.wordList];
+      newList[editIndex] = {
+        text: editValue,
+        definition: editDefinition,
+      };
+      return { wordList: newList, editPanelVisible: false, editValue: '', editDefinition: '' };
     });
-    this.setState({ wordList: updatedWordList }, () => {
-      this.handleSearch();
-    });
-  }
+  };
 
   async handleTranslate() {
     const apiKey = 'AIzaSyBioEiNvHvyhP2Ay98x_xAAs5pQGYs23P4'; // Replace with your actual API key
@@ -156,9 +195,10 @@ class Dictionary extends Component {
       selectedLanguage,
     } = this.state;
 
+    const displayList = this.state.searchValue ? filteredList : this.state.wordList;
+
     return (
       <div>
-
         <h1>My Webpage</h1>
         <p>Click the button below to show the text content.</p>
 
@@ -179,10 +219,10 @@ class Dictionary extends Component {
                   placeholder="Search..."
                   onChange={this.handleSearchChange}
                 />
-                <button id="add-word-btn" onClick={this.handleAddWord}>+</button>
+                <button id="add-word-btn" onClick={this.handleAddWordModal}>+</button>
               </div>
               <div id="text-container">
-                {(this.state.searchValue ? this.state.filteredList : this.state.wordList).map((word, index) => (
+                {/* {(this.state.searchValue ? this.state.filteredList : this.state.wordList).map((word, index) => (
                   <div key={index} className="word-entry">
                     <h3>Word: {word.text}</h3>
                     <p>Definition: {word.definition}</p>
@@ -193,8 +233,40 @@ class Dictionary extends Component {
                       Edit
                     </button>
                   </div>
+                ))} */}
+                {(displayList).map((word, index) => (
+                  <div key={index} className="word-entry">
+                    <h3>Word: {word.text}</h3>
+                    <p>Definition: {word.definition}</p>
+                    <button onClick={() => this.handleDeleteWord(index)}>
+                      Delete
+                    </button>
+                    <button onClick={() => this.showEditPanel(word)}>
+                      Edit
+                    </button>
+                  </div>
                 ))}
+
               </div>
+              {this.state.addWordModalVisible && (
+                <Modal onClose={this.handleAddWordModal}>
+                  <h3>Add Word</h3>
+                  <input
+                    type="text"
+                    placeholder="Word"
+                    value={this.state.newWordValue}
+                    onChange={(e) => this.setState({ newWordValue: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Definition"
+                    value={this.state.newDefinitionValue}
+                    onChange={(e) => this.setState({ newDefinitionValue: e.target.value })}
+                  />
+                  <button onClick={this.handleAddWord}>Save</button>
+                  <button onClick={this.handleAddWordModal}>Cancel</button>
+                </Modal>
+              )}
               {/* <button id="edit-btn" onClick={this.showEditPanel}>
                 Edit
               </button> */}
@@ -203,34 +275,24 @@ class Dictionary extends Component {
               </button>
 
               {editPanelVisible && (
-                <div id="edit-panel">
-                  <div id="edit-container">
-                    <input
-                      type="text"
-                      id="edit-word"
-                      placeholder="Word..."
-                      value={editValue}
-                      onChange={(e) => this.handleEditChange(e, 'editValue')}
-                    />
-                    <textarea
-                      id="edit-definition"
-                      placeholder="Definition..."
-                      rows="5"
-                      value={editDefinition}
-                      onChange={(e) =>
-                        this.handleEditChange(e, 'editDefinition')
-                      }
-                    ></textarea>
-                  </div>
-                  <button id="save-btn" onClick={this.handleEditWord}>
-                    Save
-                  </button>
-                  <button id="cancel-btn" onClick={this.hideEditPanel}>
-                    Cancel
-                  </button>
-                </div>
+                <Modal onClose={this.hideEditPanel}>
+                  <h3>Edit Word</h3>
+                  <input
+                    type="text"
+                    placeholder="Word"
+                    value={editValue}
+                    onChange={(e) => this.handleEditChange(e, 'editValue')}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Definition"
+                    value={editDefinition}
+                    onChange={(e) => this.handleEditChange(e, 'editDefinition')}
+                  />
+                  <button onClick={this.handleEditWord}>Save</button>
+                  <button onClick={this.hideEditPanel}>Cancel</button>
+                </Modal>
               )}
-
               {languageModalVisible && (
                 <div id="language-modal">
                   <div className="modal-content">
