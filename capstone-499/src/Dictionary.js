@@ -11,6 +11,7 @@ class Dictionary extends Component {
       editPanelVisible: false,
       languageModalVisible: false,
       addWordModalVisible: false,
+      isTextTranslated: false,
       newWordValue: '',
       newDefinitionValue: '',
       textContent: '',
@@ -19,6 +20,7 @@ class Dictionary extends Component {
       editDefinition: '',
       wordList: [],
       filteredList: [],
+      translatedWordList: [],
       selectedLanguage: 'es',
       translatedText: '',
     };
@@ -155,6 +157,36 @@ class Dictionary extends Component {
     });
   };
 
+  async translateWordList(wordList, targetLanguage) {
+    const apiKey = 'AIzaSyBioEiNvHvyhP2Ay98x_xAAs5pQGYs23P4';
+
+    const translateRequest = async (text) => {
+      try {
+        const response = await axios.post(`https://translation.googleapis.com/language/translate/v2?key=${apiKey}`, {
+          q: text,
+          target: targetLanguage,
+          format: 'text',
+        });
+
+        if (response.data && response.data.data && response.data.data.translations) {
+          return response.data.data.translations[0].translatedText;
+        }
+      } catch (error) {
+        console.error('Translation API error:', error);
+      }
+    };
+
+    const translatedWordList = [];
+
+    for (const word of wordList) {
+      const translatedText = await translateRequest(word.text);
+      const translatedDefinition = await translateRequest(word.definition);
+      translatedWordList.push({ text: translatedText, definition: translatedDefinition });
+    }
+
+    return translatedWordList;
+  }
+
   async handleTranslate() {
     const apiKey = 'AIzaSyBioEiNvHvyhP2Ay98x_xAAs5pQGYs23P4'; // Replace with your actual API key
     const text = this.state.textContent; // Replace with the text you want to translate
@@ -169,7 +201,7 @@ class Dictionary extends Component {
 
       if (response.data && response.data.data && response.data.data.translations) {
         const translatedText = response.data.data.translations[0].translatedText;
-        this.setState({ translatedText });
+        this.setState({ translatedText, isTextTranslated: true });
       } else {
         alert('Error occurred while translating the text');
       }
@@ -177,12 +209,42 @@ class Dictionary extends Component {
       console.error('Translation API error:', error);
       alert('Error occurred while translating the text');
     }
+    const translatedWordList = await this.translateWordList(this.state.wordList, targetLanguage);
+    this.setState({ translatedWordList, isTextTranslated: true });
   }
+
+  handleTranslateBackToEnglish = async () => {
+    const apiKey = 'AIzaSyBioEiNvHvyhP2Ay98x_xAAs5pQGYs23P4';
+    const text = this.state.translatedText;
+    const targetLanguage = 'en';
+
+    try {
+      const response = await axios.post(`https://translation.googleapis.com/language/translate/v2?key=${apiKey}`, {
+        q: text,
+        target: targetLanguage,
+        format: 'text',
+      });
+
+      if (response.data && response.data.data && response.data.data.translations) {
+        const translatedText = response.data.data.translations[0].translatedText;
+        this.setState({ translatedText, isTextTranslated: false });
+      } else {
+        alert('Error occurred while translating the text back to English');
+      }
+    } catch (error) {
+      console.error('Translation API error:', error);
+      alert('Error occurred while translating the text back to English');
+    }
+    this.setState({ translatedWordList: [], isTextTranslated: false });
+  };
 
   handleLanguageChange(e) {
     this.setState({ selectedLanguage: e.target.value });
   }
 
+  handleTextContentChange = (e) => {
+    this.setState({ textContent: e.target.value });
+  };
 
   render() {
     const {
@@ -195,7 +257,7 @@ class Dictionary extends Component {
       selectedLanguage,
     } = this.state;
 
-    const displayList = this.state.searchValue ? filteredList : this.state.wordList;
+    const displayList = this.state.isTextTranslated ? this.state.translatedWordList : (this.state.searchValue ? filteredList : this.state.wordList);
 
     return (
       <div>
@@ -212,6 +274,13 @@ class Dictionary extends Component {
               <span className="close" onClick={this.hideTextModal}>
                 &times;
               </span>
+              {/* <input
+                type="text"
+                id="text-content-field"
+                placeholder="Enter text to translate..."
+                value={this.state.textContent}
+                onChange={this.handleTextContentChange}
+              /> */}
               <div id="search-bar">
                 <input
                   type="text"
@@ -246,7 +315,12 @@ class Dictionary extends Component {
                     </button>
                   </div>
                 ))}
-
+                {/*                 {this.state.isTextTranslated && (
+                  <div>
+                    <h3>Translated Text:</h3>
+                    <p>{this.state.translatedText}</p>
+                  </div>
+                )} */}
               </div>
               {this.state.addWordModalVisible && (
                 <Modal onClose={this.handleAddWordModal}>
@@ -304,12 +378,20 @@ class Dictionary extends Component {
                       <option value="de">German</option>
                       {/* Add more languages here */}
                     </select>
-                    <button id="translate-btn" onClick={this.handleTranslate}>Translate</button>
+                    <button id="translate-btn" onClick={() => this.handleTranslate()}>Translate</button>
                     <button id="cancel-translate-btn" onClick={this.hideLanguageModal}>Cancel</button>
                     <button id="translate-back-btn" onClick={this.handleTranslateBackToEnglish}>Translate Back to English</button>
                   </div>
                 </div>
               )}
+              {
+                this.state.isTextTranslated && (
+                  <div>
+                    <h3>Translated Text:</h3>
+                    <p>{this.state.translatedText}</p>
+                  </div>
+                )
+              }
             </div>
           </div>
         )}
