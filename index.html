@@ -1,0 +1,57 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>My Webpage</h1>
+    <p>Click the button below to show the text content.</p>
+    <button id="show-text-btn">Show Text</button>
+
+    <div id="text-modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="search-bar">
+                <input type="text" id="search-field" placeholder="Search...">
+                <button id="search-btn">Search</button>
+                <button id="add-word-btn">+</button>
+                <button id="delete-word-btn">-</button>
+            </div>
+            <div id="text-container">
+            </div>
+            <div class="button-container">
+                <button id="edit-btn">Edit</button>
+                <button id="translate-back-btn">Translate Back to English</button>
+                <button id="change-lang-btn">Change Language</button>
+            </div>
+            <div id="edit-panel" style="display: none;">
+                <div id="edit-container">
+                    <input type="text" id="edit-word" placeholder="Word...">
+                    <textarea id="edit-definition" placeholder="Definition..." rows="5"></textarea>
+                </div>
+                <button id="save-btn">Save</button>
+                <button id="cancel-btn">Cancel</button>
+            </div>
+            <div id="language-modal" style="display: none;">
+                <div class="modal-content">
+                    <span class="close-lang">&times;</span>
+                    <h2>Select Language</h2>
+                    <select id="language-select">
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                        <!-- Add more languages here -->
+                    </select>
+                    <button id="translate-btn">Translate</button>
+                    <button id="cancel-translate-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

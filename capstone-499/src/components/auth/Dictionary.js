@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import './App.css';
+import '/Users/ekow_t/Desktop/Capstone-499/capstone-499/src/App.css';
 import axios from 'axios';
-import Modal from './Modal';
+import Modal from '../../Modal';
 
 class Dictionary extends Component {
   constructor(props) {
@@ -260,9 +260,13 @@ class Dictionary extends Component {
     const displayList = this.state.isTextTranslated ? this.state.translatedWordList : (this.state.searchValue ? filteredList : this.state.wordList);
 
     return (
+
+
       <div>
         <h1>My Webpage</h1>
         <p>Click the button below to show the text content.</p>
+      
+
 
         <button id="show-text-btn" onClick={this.showTextModal}>
           Show Text
