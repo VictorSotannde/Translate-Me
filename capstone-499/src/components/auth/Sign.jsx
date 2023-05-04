@@ -11,6 +11,7 @@ const SignIn = () => {
 
   const signIn = (e) => {
     e.preventDefault();
+    console.log("Attempting to sign in...");
     setIsSubmitting(true);
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
@@ -18,12 +19,17 @@ const SignIn = () => {
       })
       .catch((error) => {
         console.log(error);
+        if (error.code === "auth/user-not-found") {
+          alert("There is no user record corresponding to this email address. Please check your email or sign up for a new account.");
+        } else {
+          alert("An error occurred while signing in. Please try again.");
+        }
       })
       .finally(() => {
         setIsSubmitting(false);
       });
-  };
-
+  };  
+  
   return (
     <div className="sign-in-container">
       <form onSubmit={signIn}>

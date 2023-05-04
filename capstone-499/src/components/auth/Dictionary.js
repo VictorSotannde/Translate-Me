@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import '/Users/ekow_t/Desktop/Capstone-499/capstone-499/src/App.css';
+import '../../App.css';
 import axios from 'axios';
 import Modal from '../../Modal';
 

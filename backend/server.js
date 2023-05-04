@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json()); // Add this line
 
-const dataFilePath = '/Users/ekow_t/Desktop/Capstone-499/backend/data.txt';
+const dataFilePath = path.join(__dirname, 'data.txt');
 
 // Define the GET API endpoint
 app.get('/api/data', (req, res) => {
