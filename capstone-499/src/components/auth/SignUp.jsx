@@ -48,14 +48,6 @@ const SignUp = () => {
         <button onClick={()=>navigate("/sign")}>Sign Up</button>
         
       </form>
-
-     
-
-     
-      
-
-                    
-
     </div>
     </section>
     </main> 
