@@ -4,6 +4,16 @@ import axios from 'axios';
 import Modal from '../../Modal';
 
 class Dictionary extends Component {
+  debounce(fn, delay) {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        fn(...args);
+      }, delay);
+    };
+  }
+
   constructor(props) {
     super(props);
     this.state = {
@@ -23,9 +33,12 @@ class Dictionary extends Component {
       translatedWordList: [],
       selectedLanguage: 'es',
       translatedText: '',
+      translatedWebsiteContent: null,
     };
     this.handleEditChange = this.handleEditChange.bind(this);
     this.handleLanguageChange = this.handleLanguageChange.bind(this);
+    this.handleSearchChange = this.debounce(this.handleSearchChange.bind(this), 300);
+    this.websiteContainerRef = React.createRef();
   }
 
   componentDidMount() {
@@ -42,6 +55,7 @@ class Dictionary extends Component {
           console.log(this.state.wordList);
         });
       });
+    this.refreshWordList();
   }
 
   showTextModal = () => {
@@ -94,7 +108,15 @@ class Dictionary extends Component {
     this.setState({ filteredList });
   }
 
-  handleAddWord = () => {
+  refreshWordList = async () => {
+    const response = await fetch('/api/data');
+    const data = await response.json();
+    const wordList = data.text.split('\n').filter((line) => line.trim() !== '');
+    this.setState({ wordList });
+  };
+
+
+  handleAddWord = async () => {
     const newEntry = {
       text: this.state.newWordValue,
       definition: this.state.newDefinitionValue,
@@ -116,35 +138,65 @@ class Dictionary extends Component {
         newDefinitionValue: '',
       };
     });
+
+    // Send a POST request to the backend to add the word
+    await fetch('http://localhost:4000/api/data/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text: newEntry.text, definition: newEntry.definition }),
+    });
+
+    this.refreshWordList();
   };
 
+  /* handleDeleteWord = async (index) => {
+    const wordList = this.state.searchValue ? this.state.filteredList : this.state.wordList;
+    const wordToDelete = wordList[index];
+  
+    this.setState((prevState) => {
+      const newList = [...prevState.wordList];
+      const originalIndex = newList.findIndex((word) => word.text === wordToDelete.text);
+      newList.splice(originalIndex, 1);
+      return { wordList: newList };
+    });
+  
+    // Send a DELETE request to the backend to delete the word
+    await fetch('/api/data/delete', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text: wordToDelete.text }),
+    });
+  
+    this.refreshWordList();
+  }; */
 
-  handleDeleteWord = (index) => {
-    // Check if the searchValue is present
-    if (this.state.searchValue) {
-      // If so, remove the word from the filtered list and find the corresponding index in the original word list
-      const wordToDelete = this.state.filteredList[index];
-      const originalIndex = this.state.wordList.findIndex((word) => word.text === wordToDelete.text);
-      this.setState((prevState) => {
-        const newList = [...prevState.wordList];
-        newList.splice(originalIndex, 1);
-        return { wordList: newList };
-      });
-    } else {
-      // If not, remove the word from the original word list
-      this.setState((prevState) => {
-        const newList = [...prevState.wordList];
-        newList.splice(index, 1);
-        return { wordList: newList };
-      });
-    }
+  handleDeleteWord = async (index) => {
+    const wordList = this.state.searchValue ? this.state.filteredList : this.state.wordList;
+    const wordToDelete = wordList[index];
+  
+    // Send a DELETE request to the backend to delete the word
+    await fetch('http://localhost:4000/api/data/delete', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text: wordToDelete.text }),
+    });
+  
+    // Refresh the word list after the deletion
+    this.refreshWordList();
   };
+  
 
   handleEditChange(event, type) {
     this.setState({ [type]: event.target.value });
   }
 
-  handleEditWord = () => {
+  handleEditWord = async () => {
     const { editIndex, editValue, editDefinition } = this.state;
 
     this.setState((prevState) => {
@@ -155,6 +207,18 @@ class Dictionary extends Component {
       };
       return { wordList: newList, editPanelVisible: false, editValue: '', editDefinition: '' };
     });
+    // Send a PUT request to the backend to update the word
+    const wordToUpdate = this.state.wordList[editIndex];
+    const updatedEntry = { text: editValue, definition: editDefinition };
+    await fetch('http://localhost:4000/api/data/update', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ originalWord: wordToUpdate.text, updatedWord: updatedEntry.text, updatedDefinition: updatedEntry.definition }),
+    });
+
+    this.refreshWordList();
   };
 
   async translateWordList(wordList, targetLanguage) {
@@ -176,15 +240,42 @@ class Dictionary extends Component {
       }
     };
 
-    const translatedWordList = [];
+    const translationPromises = wordList.map(async (word) => {
+      const translatedTextPromise = translateRequest(word.text);
+      const translatedDefinitionPromise = translateRequest(word.definition);
+      const [translatedText, translatedDefinition] = await Promise.all([translatedTextPromise, translatedDefinitionPromise]);
+      return { text: translatedText, definition: translatedDefinition };
+    });
 
-    for (const word of wordList) {
-      const translatedText = await translateRequest(word.text);
-      const translatedDefinition = await translateRequest(word.definition);
-      translatedWordList.push({ text: translatedText, definition: translatedDefinition });
+    return Promise.all(translationPromises);
+  }
+
+  async translateElement(element, targetLanguage) {
+    if (element.nodeType === Node.TEXT_NODE && element.textContent.trim()) {
+      const translatedText = await this.translateText(element.textContent, targetLanguage);
+      element.textContent = translatedText;
+    } else if (element.childNodes.length > 0) {
+      for (const child of element.childNodes) {
+        await this.translateElement(child, targetLanguage);
+      }
     }
+  }
 
-    return translatedWordList;
+  async translateText(text, targetLanguage) {
+    const apiKey = 'AIzaSyBioEiNvHvyhP2Ay98x_xAAs5pQGYs23P4';
+    try {
+      const response = await axios.post(`https://translation.googleapis.com/language/translate/v2?key=${apiKey}`, {
+        q: text,
+        target: targetLanguage,
+        format: 'text',
+      });
+
+      if (response.data && response.data.data && response.data.data.translations) {
+        return response.data.data.translations[0].translatedText;
+      }
+    } catch (error) {
+      console.error('Translation API error:', error);
+    }
   }
 
   async handleTranslate() {
@@ -210,33 +301,11 @@ class Dictionary extends Component {
       alert('Error occurred while translating the text');
     }
     const translatedWordList = await this.translateWordList(this.state.wordList, targetLanguage);
+    this.hideLanguageModal();
     this.setState({ translatedWordList, isTextTranslated: true });
+    const { selectedLanguage } = this.state;
+    await this.translateElement(this.websiteContainerRef.current, this.state.selectedLanguage);
   }
-
-  handleTranslateBackToEnglish = async () => {
-    const apiKey = 'AIzaSyBioEiNvHvyhP2Ay98x_xAAs5pQGYs23P4';
-    const text = this.state.translatedText;
-    const targetLanguage = 'en';
-
-    try {
-      const response = await axios.post(`https://translation.googleapis.com/language/translate/v2?key=${apiKey}`, {
-        q: text,
-        target: targetLanguage,
-        format: 'text',
-      });
-
-      if (response.data && response.data.data && response.data.data.translations) {
-        const translatedText = response.data.data.translations[0].translatedText;
-        this.setState({ translatedText, isTextTranslated: false });
-      } else {
-        alert('Error occurred while translating the text back to English');
-      }
-    } catch (error) {
-      console.error('Translation API error:', error);
-      alert('Error occurred while translating the text back to English');
-    }
-    this.setState({ translatedWordList: [], isTextTranslated: false });
-  };
 
   handleLanguageChange(e) {
     this.setState({ selectedLanguage: e.target.value });
@@ -263,14 +332,48 @@ class Dictionary extends Component {
 
 
       <div>
-        <h1>My Webpage</h1>
-        <p>Click the button below to show the text content.</p>
-      
+        <div ref={this.websiteContainerRef}>
+          <div className="top-bar">
+            <div className="left">
+              <h1>My Webpage</h1>
+            </div>
+            <div className="right">
+              <button id="showTextButton" onClick={this.showTextModal}>
+                Dictionary
+              </button>
+            </div>
+          </div>
+          <h2>Interesting Facts About Software</h2>
 
+          <h3>Fact 1: The first computer program</h3>
+          <p>
+            Ada Lovelace, an English mathematician, is credited with writing the first computer program in the 19th century. She worked on Charles Babbage's Analytical Engine and wrote an algorithm to compute Bernoulli numbers.
+          </p>
 
-        <button id="show-text-btn" onClick={this.showTextModal}>
+          <h3>Fact 2: The history of open-source software</h3>
+          <p>
+            The concept of open-source software dates back to the 1950s and 1960s when computer programs were shared freely among users. The modern open-source movement began in the 1980s with the creation of the GNU Project by Richard Stallman.
+          </p>
+
+          <h3>Fact 3: The largest software company</h3>
+          <p>
+            Microsoft, founded by Bill Gates and Paul Allen in 1975, is currently the largest software company in the world. Some of its most popular products include Windows, Office, and Azure.
+          </p>
+
+          <h3>Fact 4: The importance of software testing</h3>
+          <p>
+            Software testing is a crucial aspect of software development. It helps ensure that the software meets the requirements and functions correctly. According to a study by the National Institute of Standards and Technology, software bugs cost the U.S. economy approximately $59.5 billion annually.
+          </p>
+
+          <h3>Fact 5: The rise of artificial intelligence (AI) in software development</h3>
+          <p>
+            Artificial intelligence is transforming the software development process. AI-powered tools are increasingly being used to automate tasks, improve code quality, and enhance user experiences. Examples of AI in software development include natural language processing, machine learning, and deep learning techniques.
+          </p>
+
+        </div>
+        {/* <button id="show-text-btn" onClick={this.showTextModal}>
           Show Text
-        </button>
+        </button> */}
 
         {textModalVisible && (
           <div id="text-modal">
@@ -278,13 +381,6 @@ class Dictionary extends Component {
               <span className="close" onClick={this.hideTextModal}>
                 &times;
               </span>
-              {/* <input
-                type="text"
-                id="text-content-field"
-                placeholder="Enter text to translate..."
-                value={this.state.textContent}
-                onChange={this.handleTextContentChange}
-              /> */}
               <div id="search-bar">
                 <input
                   type="text"
@@ -295,18 +391,6 @@ class Dictionary extends Component {
                 <button id="add-word-btn" onClick={this.handleAddWordModal}>+</button>
               </div>
               <div id="text-container">
-                {/* {(this.state.searchValue ? this.state.filteredList : this.state.wordList).map((word, index) => (
-                  <div key={index} className="word-entry">
-                    <h3>Word: {word.text}</h3>
-                    <p>Definition: {word.definition}</p>
-                    <button onClick={() => this.handleDeleteWord(index)}>
-                      Delete
-                    </button>
-                    <button onClick={() => this.showEditPanel(index)}>
-                      Edit
-                    </button>
-                  </div>
-                ))} */}
                 {(displayList).map((word, index) => (
                   <div key={index} className="word-entry">
                     <h3>Word: {word.text}</h3>
@@ -319,39 +403,29 @@ class Dictionary extends Component {
                     </button>
                   </div>
                 ))}
-                {/*                 {this.state.isTextTranslated && (
-                  <div>
-                    <h3>Translated Text:</h3>
-                    <p>{this.state.translatedText}</p>
-                  </div>
-                )} */}
               </div>
               {this.state.addWordModalVisible && (
                 <Modal onClose={this.handleAddWordModal}>
                   <h3>Add Word</h3>
                   <input
                     type="text"
-                    placeholder="Word"
                     value={this.state.newWordValue}
                     onChange={(e) => this.setState({ newWordValue: e.target.value })}
+                    placeholder="New word"
                   />
                   <input
                     type="text"
-                    placeholder="Definition"
                     value={this.state.newDefinitionValue}
                     onChange={(e) => this.setState({ newDefinitionValue: e.target.value })}
+                    placeholder="New definition"
                   />
                   <button onClick={this.handleAddWord}>Save</button>
                   <button onClick={this.handleAddWordModal}>Cancel</button>
                 </Modal>
               )}
-              {/* <button id="edit-btn" onClick={this.showEditPanel}>
-                Edit
-              </button> */}
               <button id="change-lang-btn" onClick={this.showLanguageModal}>
                 Change Language
               </button>
-
               {editPanelVisible && (
                 <Modal onClose={this.hideEditPanel}>
                   <h3>Edit Word</h3>
@@ -380,11 +454,12 @@ class Dictionary extends Component {
                       <option value="es">Spanish</option>
                       <option value="fr">French</option>
                       <option value="de">German</option>
+                      <option value="en">English</option>
                       {/* Add more languages here */}
                     </select>
                     <button id="translate-btn" onClick={() => this.handleTranslate()}>Translate</button>
                     <button id="cancel-translate-btn" onClick={this.hideLanguageModal}>Cancel</button>
-                    <button id="translate-back-btn" onClick={this.handleTranslateBackToEnglish}>Translate Back to English</button>
+                    {/* <button id="translate-back-btn" onClick={this.handleTranslateBackToEnglish}>Translate Back to English</button> */}
                   </div>
                 </div>
               )}

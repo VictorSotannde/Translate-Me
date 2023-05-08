@@ -4,9 +4,6 @@ day - the time of light between one night and the next.
 first - preceding all others in time, order, or importance: such as."
 apple - the fleshy, usually rounded red, yellow, or green edible pome fruit of a usually cultivated tree (genus Malus) of the rose family
 butter - a solid emulsion of fat globules, air, and water made by churning milk or cream and used as food"
-acceptance - the quality or state of being accepted or acceptable
-access - permission, liberty, or ability to enter, approach, or pass to and from a place or to approach or communicate with a person or thing
-accord - to grant or give especially as appropriate, due, or earned
 grenadine - thin syrup made from pomegranate juice; used in mixed drinks
 pomegranate - shrub or small tree having large red many-seeded fruit
 hefty - of considerable weight and size
@@ -47,7 +44,6 @@ paleobotany - the study of fossil plants
 cephalopodan - relating or belonging to the class Cephalopoda
 Serbian - of or relating to the people or language or culture of the region of Serbia
 tribunal - an assembly to conduct judicial business
-ague - chills and fever that are symptomatic of malaria
 Netherlands - a constitutional monarchy in western Europe on the North Sea
 Bosnian - of or relating to or characteristic of Bosnia-Herzegovina or the people of Bosnia
 Albanian - of or relating to Albania or its people or language or culture
@@ -85,11 +81,13 @@ torture - infliction of suffering to punish or obtain information
 Guatemala - a republic in Central America
 Bangladesh - a Muslim republic in southern Asia bordered by India to the north and west and east and the Bay of Bengal to the south; formerly part of India and then part of Pakistan; it achieved independence in 1971
 manipulate - influence or control shrewdly or deviously
-Bolivia - a landlocked republic in central South America
 stringent - demanding strict attention to rules and procedures
 vulnerable - capable of being wounded or hurt
 prod - push against gently
 famine - a severe shortage of food resulting in starvation and death
 eradicate - destroy completely, as if down to the roots
-abducent - drawing away, as by the action of a muscle; abducting.
-aj - a man that is me
+aj - a man that is meheehaw - the braying sound made by a donkey
+subsolar - situated beneath the sun or between the earth and the sun
+scenography - the art of representing objects in accordance with the rules of perspective
+nursemaid - a woman or girl employed to care for a child or several children, especially in a household
+ekow - computer science god able to complete anything
