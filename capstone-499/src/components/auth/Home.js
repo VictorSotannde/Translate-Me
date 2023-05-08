@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-//import '.capstone-499/src/App.js';
+import '../../App.css';
 
 const Home = () => {
     // Add your event handling and state management logic here
@@ -10,7 +10,6 @@ const Home = () => {
             <div id="border-top">
                 <h1> Translate Me </h1>
                 <p style={{ fontStyle: "italic", fontSize: "small" }}> "in your own way"</p>
-                <button id="show-text-btn">CLICK HERE</button>
                 <div id="border-border">
                     <div id="navmenu">
                         <ul className="navbar-nav ms-auto">
