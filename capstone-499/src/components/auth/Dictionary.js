@@ -43,18 +43,18 @@ class Dictionary extends Component {
 
   componentDidMount() {
     fetch('http://localhost:4000/api/data')
-    .then((response) => response.json())
-    .then((data) => {
-      const rawWordList = data.text.split('\n');
-      const formattedWordList = rawWordList.map((entry) => {
-        const [text, definition] = entry.split(' - ');
-        return { text, definition };
+      .then((response) => response.json())
+      .then((data) => {
+        const rawWordList = data.text.split('\n');
+        const formattedWordList = rawWordList.map((entry) => {
+          const [text, definition] = entry.split(' - ');
+          return { text, definition };
+        });
+        const sortedWordList = formattedWordList.sort((a, b) => a.text.localeCompare(b.text));
+        this.setState({ wordList: sortedWordList }, () => {
+          console.log(this.state.wordList);
+        });
       });
-      const sortedWordList = formattedWordList.sort((a, b) => a.text.localeCompare(b.text));
-      this.setState({ wordList: sortedWordList }, () => {
-        console.log(this.state.wordList);
-      });
-    });
     this.refreshWordList();
   }
 
@@ -114,14 +114,14 @@ class Dictionary extends Component {
     const wordList = data.text.split('\n').filter((line) => line.trim() !== '');
     this.setState({ wordList });
   };
-  
 
-  handleAddWord = async (newWordData) => {
+
+  handleAddWord = async () => {
     const newEntry = {
       text: this.state.newWordValue,
       definition: this.state.newDefinitionValue,
     };
-    
+
     this.setState((prevState) => {
       const newList = [...prevState.wordList];
       const insertIndex = newList.findIndex((word) => word.text.localeCompare(newEntry.text) > 0);
@@ -138,49 +138,59 @@ class Dictionary extends Component {
         newDefinitionValue: '',
       };
     });
-   // Send a POST request to the backend to add the word
-  await fetch('/api/data/add', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ text: newWordData.word, definition: newWordData.definition }),
-  });
 
-  this.refreshWordList();
-};
+    // Send a POST request to the backend to add the word
+    await fetch('http://localhost:4000/api/data/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text: newEntry.text, definition: newEntry.definition }),
+    });
+
+    this.refreshWordList();
+  };
+
+  /* handleDeleteWord = async (index) => {
+    const wordList = this.state.searchValue ? this.state.filteredList : this.state.wordList;
+    const wordToDelete = wordList[index];
+  
+    this.setState((prevState) => {
+      const newList = [...prevState.wordList];
+      const originalIndex = newList.findIndex((word) => word.text === wordToDelete.text);
+      newList.splice(originalIndex, 1);
+      return { wordList: newList };
+    });
+  
+    // Send a DELETE request to the backend to delete the word
+    await fetch('/api/data/delete', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text: wordToDelete.text }),
+    });
+  
+    this.refreshWordList();
+  }; */
 
   handleDeleteWord = async (index) => {
-    // Check if the searchValue is present
-    if (this.state.searchValue) {
-      // If so, remove the word from the filtered list and find the corresponding index in the original word list
-      const wordToDelete = this.state.filteredList[index];
-      const originalIndex = this.state.wordList.findIndex((word) => word.text === wordToDelete.text);
-      this.setState((prevState) => {
-        const newList = [...prevState.wordList];
-        newList.splice(originalIndex, 1);
-        return { wordList: newList };
-      });
-    } else {
-      // If not, remove the word from the original word list
-      this.setState((prevState) => {
-        const newList = [...prevState.wordList];
-        newList.splice(index, 1);
-        return { wordList: newList };
-      });
-    }
+    const wordList = this.state.searchValue ? this.state.filteredList : this.state.wordList;
+    const wordToDelete = wordList[index];
   
-     // Send a DELETE request to the backend to delete the word
-  await fetch('/api/data/delete', {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ text: this.state.wordList[index].text }),
-  });
-
-  this.refreshWordList();
-};
+    // Send a DELETE request to the backend to delete the word
+    await fetch('http://localhost:4000/api/data/delete', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text: wordToDelete.text }),
+    });
+  
+    // Refresh the word list after the deletion
+    this.refreshWordList();
+  };
+  
 
   handleEditChange(event, type) {
     this.setState({ [type]: event.target.value });
@@ -200,12 +210,12 @@ class Dictionary extends Component {
     // Send a PUT request to the backend to update the word
     const wordToUpdate = this.state.wordList[editIndex];
     const updatedEntry = { text: editValue, definition: editDefinition };
-    await fetch(`/api/words/${wordToUpdate.text}`, {
+    await fetch('http://localhost:4000/api/data/update', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(updatedEntry),
+      body: JSON.stringify({ originalWord: wordToUpdate.text, updatedWord: updatedEntry.text, updatedDefinition: updatedEntry.definition }),
     });
 
     this.refreshWordList();
@@ -399,15 +409,15 @@ class Dictionary extends Component {
                   <h3>Add Word</h3>
                   <input
                     type="text"
-                    placeholder="Word"
                     value={this.state.newWordValue}
                     onChange={(e) => this.setState({ newWordValue: e.target.value })}
+                    placeholder="New word"
                   />
                   <input
                     type="text"
-                    placeholder="Definition"
                     value={this.state.newDefinitionValue}
                     onChange={(e) => this.setState({ newDefinitionValue: e.target.value })}
+                    placeholder="New definition"
                   />
                   <button onClick={this.handleAddWord}>Save</button>
                   <button onClick={this.handleAddWordModal}>Cancel</button>
@@ -416,7 +426,6 @@ class Dictionary extends Component {
               <button id="change-lang-btn" onClick={this.showLanguageModal}>
                 Change Language
               </button>
-
               {editPanelVisible && (
                 <Modal onClose={this.hideEditPanel}>
                   <h3>Edit Word</h3>
