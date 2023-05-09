@@ -1,5 +1,7 @@
 import React from 'react';
 import './App.css';
+import './global.css';
+//import '.Home.css';
 import Dictionary from './components/auth/Dictionary';
 import Home from './components/auth/Home';
 import SignIn from './components/auth/Sign';
