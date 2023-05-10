@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../../App.css';
 import "../../DictionarySite.css";
 import axios from 'axios';
@@ -42,6 +43,8 @@ class Dictionary extends Component {
     this.handleSearchChange = this.debounce(this.handleSearchChange.bind(this), 300);
     this.websiteContainerRef = React.createRef();
   }
+
+
 
   componentDidMount() {
     fetch('http://localhost:4000/api/data')
@@ -337,7 +340,13 @@ class Dictionary extends Component {
                     src="/images.png"
                   />
                 </button>
-                <img className="frame-child" alt="" src="/ellipse-2@2x.png" />
+                <button id="show-text-btn" onClick={this.props.onProfileClick}>
+                <img
+                  className="frame-child"
+                  alt=""
+                  src="/ellipse-2@2x.png"
+                />
+               </button>
               </div>
               <div className="image-2-parent">
                 <img className="image-2-icon" alt="" src="/image-2@2x.png" />
@@ -847,4 +856,16 @@ class Dictionary extends Component {
     );
   }
 }
-export default Dictionary;
+
+// Add this after the Dictionary class definition
+function DictionaryWithNavigation(props) {
+  const navigate = useNavigate();
+
+  const handleProfileNavigation = () => {
+    navigate('/profile');
+  };
+
+  return <Dictionary {...props} onProfileClick={handleProfileNavigation} />;
+}
+export default DictionaryWithNavigation;
+//export default Dictionary;
