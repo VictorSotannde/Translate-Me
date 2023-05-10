@@ -16,7 +16,6 @@ lubberly - clumsy and unskilled
 cordial - politely warm and friendly
 jocular - characterized by jokes and good humor
 Utopian - of or pertaining to or resembling a utopia
-tamp - press down tightly
 subnormality - the state of being less than normal
 obbligato - a part of the score that must be performed without change or omission
 woodsy - characteristic or suggestive of woods
@@ -90,4 +89,4 @@ aj - a man that is meheehaw - the braying sound made by a donkey
 subsolar - situated beneath the sun or between the earth and the sun
 scenography - the art of representing objects in accordance with the rules of perspective
 nursemaid - a woman or girl employed to care for a child or several children, especially in a household
-ekow - computer science god able to complete anything
+Capstone - Senior level class to show off what we have learn in our college years

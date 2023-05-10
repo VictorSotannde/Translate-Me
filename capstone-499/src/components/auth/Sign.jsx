@@ -2,6 +2,8 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
 import { auth } from "../../firebase";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import '../../App.css';
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -28,11 +30,11 @@ const SignIn = () => {
       .finally(() => {
         setIsSubmitting(false);
       });
-  };  
-  
+  };
+
   return (
     <div className="sign-in-container">
-      <form onSubmit={signIn}>
+      <form className="sign-in-form" onSubmit={signIn}>
         <h1>Log In to your Account</h1>
         <input
           type="email"
@@ -40,17 +42,23 @@ const SignIn = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-        ></input>
+        />
         <input
           type="password"
           placeholder="Enter your password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-        ></input>
+        />
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Logging in..." : "Log In"}
         </button>
+        <div className="create-account">
+          <p>Don't have an account?</p>
+          <Link to="/signup">
+            <button type="button">Create Account</button>
+          </Link>
+        </div>
       </form>
     </div>
   );
