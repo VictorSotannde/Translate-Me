@@ -17,7 +17,7 @@ manikin - a life-size dummy used to display clothes
 canvass - get opinions by asking specific questions
 lubberly - clumsy and unskilled
 cordial - politely warm and friendly
-jocular - characterized by jokes and good humor
+jocular - characterized by good jokes and good
 Utopian - of or pertaining to or resembling a utopia
 tamp - press down tightly
 subnormality - the state of being less than normal
