@@ -144,7 +144,7 @@ class Dictionary extends Component {
       };
     });
 
-    // Send a POST request to the backend to add a word
+    // Send a POST request to the backend to add the word
     await fetch('http://localhost:4000/api/data/add', {
       method: 'POST',
       headers: {
